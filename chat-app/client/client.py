@@ -2,25 +2,31 @@ import socket
 import threading
 import tkinter as tk
 import tkinter.simpledialog as simpledialog
+import tkinter.messagebox as messagebox
 
-HOST = '192.168.1.106'
-PORT = 9998
+
 
 class Client:
 
-	def __init__(self, host, port):
-		self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.client_socket.connect((host, port))
-		self.get_and_send_username()
+	def __init__(self):
+		self.connect_to_server()
 		self.create_main_window() 
 		
-		
+	
+	def connect_to_server(self):
+		self.connection_window = tk.Tk()
+		self.connection_window.withdraw()
+		self.host = simpledialog.askstring("Connection","Please Enter The Server's Public IP Address", parent=self.connection_window)
+		self.port = simpledialog.askinteger("Connection","Please Enter The Communication PORT", parent=self.connection_window)
+		try:
+			self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.client_socket.connect((self.host, self.port))
+			self.username = simpledialog.askstring("Welcome","Please Choose a Username", parent=self.connection_window)
+			self.client_socket.send(self.username.encode('ascii'))
+		except:
+			messagebox.showerror("Error", f"No server is running on:\n HOST: {self.host} PORT: {self.port}")
+			self.connect_to_server()
 
-	def get_and_send_username(self):
-		self.dialog_window = tk.Tk()
-		self.dialog_window.withdraw()
-		self.username = simpledialog.askstring("Welcome","Please Choose a Username", parent=self.dialog_window)
-		self.client_socket.send(self.username.encode('ascii'))
 
 
 
@@ -33,16 +39,16 @@ class Client:
 
 		# chat area and users list
 		self.chat_and_username_frame = tk.Frame(self.main_window)
-		self.chat_area = tk.Text(self.chat_and_username_frame, height=25, width=65, font=("Courier", 15))
+		self.chat_area = tk.Text(self.chat_and_username_frame, height=22, width=60, font=("Arial", 15))
 		self.chat_area.bind("<Key>", lambda e: "break") # prevents user from changing text area
 		self.chat_area.pack(side = tk.LEFT)
-		self.username_area = tk.Text(self.chat_and_username_frame, height=25, width=17, font=("Courier", 15))
+		self.username_area = tk.Text(self.chat_and_username_frame, height=22, width=15, font=("Arial", 15))
 		self.username_area.bind("<Key>", lambda e: "break")
 		self.username_area.pack(side = tk.RIGHT)
 
 		# send message input area and button
 		self.send_area_frame = tk.Frame(self.main_window)
-		self.send_area = tk.Entry(self.send_area_frame, width=57)
+		self.send_area = tk.Entry(self.send_area_frame, width=60)
 		self.send_area.pack(side=tk.LEFT)
 		self.send_button = tk.Button(self.send_area_frame, text="Send", command=self.send)
 		self.send_button.pack(side=tk.RIGHT, pady = 4)
@@ -69,10 +75,13 @@ class Client:
 					self.username_area.delete('1.0', tk.END)
 					self.username_area.insert(tk.END, message)
 				else:
-					self.chat_area.insert(tk.END, message)
+					username,just_message = message.split(':', 1)	# seperate username from message
+					username += ":"
+					self.chat_area.tag_configure("bold", font="Helvetica 15 bold")	# creates the "bold" tag
+					self.chat_area.insert(tk.END, username,  "bold")
+					self.chat_area.insert(tk.END, just_message)
 					self.chat_area.see(tk.END)
 			except:
-				print("An error occured!")
 				self.client_socket.close()
 				break
 		
@@ -86,4 +95,4 @@ class Client:
 
 
 
-u1 = Client(HOST,PORT)
+u1 = Client()

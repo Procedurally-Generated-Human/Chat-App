@@ -2,20 +2,41 @@ import socket
 import threading
 
 
-HOST = '192.168.1.106'
-PORT = 9998
+
 
 
 
 class Server:
 
-	def __init__(self, host, post):
-		self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	def __init__(self):
+
+		self.setup_server()
 		self.clients = []
 		self.usernames = []
-		self.server.bind((HOST,PORT))
 		self.server.listen()
+		self.receive()
 
+
+	def setup_server(self):
+		try:
+			self.host = socket.gethostbyname(socket.gethostname())
+		except:
+			print("Could not automatically find your local ip address")
+			self.host = input("Please enter it manually: ")
+
+		self.port = 9999
+
+		try:
+			self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.server.bind((self.host,self.port))
+		except:
+			print("There was an error while setting up the server, please try again")
+			quit()
+
+		print(f"Running on HOST: {self.host}  PORT: {self.port}")
+
+
+		
 
 	def broadcast(self, message):
 		for client in self.clients:
@@ -29,6 +50,15 @@ class Server:
 				message = client.recv(1024)
 				self.broadcast(message)
 
+				if not message:
+					index = self.clients.index(client)
+					self.clients.remove(client)
+					client.close()
+					username = self.usernames[index]
+					self.usernames.remove(username)
+					self.send_users_list()
+					break
+
 			except:
 				index = self.clients.index(client)
 				self.clients.remove(client)
@@ -37,6 +67,9 @@ class Server:
 				self.usernames.remove(username)
 				self.send_users_list()
 				break
+
+
+
 
 
 	def receive(self):
@@ -62,5 +95,4 @@ class Server:
 
 
 
-server1 = Server(HOST, PORT)
-server1.receive()
+server1 = Server()
