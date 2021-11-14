@@ -94,5 +94,5 @@ class Server:
 
 
 
-
-server1 = Server()
+if __name__ == "__main__":
+	server1 = Server()
