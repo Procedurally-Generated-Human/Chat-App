@@ -94,5 +94,5 @@ class Client:
 		self.client_socket.send(message.encode('ascii'))
 
 
-
-u1 = Client()
+if __name__ == "__main__":
+	u1 = Client()
