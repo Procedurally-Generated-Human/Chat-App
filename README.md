@@ -2,7 +2,7 @@
 Cross Platform Desktop Chat Application 
 
 
-#Features. 
+# Features. 
 - Cross Platform
 - Local and Global Connection
 - Shows All Users in Room
